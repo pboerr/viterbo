@@ -8,7 +8,7 @@ from .collector import document_python_files
 
 
 def main():
-    """Main entry point for the CLI"""
+    """Main entry point for the CLI."""
     parser = argparse.ArgumentParser(
         description="Document Python files from a directory into a consolidated text file"
     )
