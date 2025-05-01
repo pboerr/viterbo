@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/logo.png" width="200" alt="Project Logo">
+</p>
+
 # Viterbo
 
 A tool for collecting and documenting code files for LLM context.
