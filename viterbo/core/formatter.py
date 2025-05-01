@@ -14,11 +14,20 @@ class BaseFormatter:
         Initialize the formatter.
 
         Args:
-            output_file: Path to the output file
-            source_path: Path to the source directory
+            output_file: Path to the output file or "clipboard"
+            source_path: Path to a source directory/file or list of paths
         """
         self.output_file = output_file
-        self.source_path = source_path
+
+        # Handle multiple source paths
+        if isinstance(source_path, list):
+            self.source_paths = source_path
+            # Use the first path for display if needed
+            self.source_path = source_path[0] if source_path else Path(".")
+        else:
+            self.source_path = source_path
+            self.source_paths = [source_path]
+
         self.file_count = 0
 
     def write_header(self, out_file):
@@ -59,7 +68,15 @@ class TextFormatter(BaseFormatter):
         out_file.write(
             f"# Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
         )
-        out_file.write(f"# Source: {self.source_path}\n\n")
+
+        # Handle display of multiple source paths
+        if len(self.source_paths) == 1:
+            out_file.write(f"# Source: {self.source_paths[0]}\n\n")
+        else:
+            out_file.write(f"# Sources: {len(self.source_paths)} directories/files\n")
+            for i, path in enumerate(self.source_paths):
+                out_file.write(f"#   {i+1}. {path}\n")
+            out_file.write("\n")
 
     def write_directory_structure(self, out_file, dir_structure):
         """Write the directory structure to the output file"""
@@ -102,9 +119,16 @@ class TextFormatter(BaseFormatter):
         """Write the summary to the output file"""
         out_file.write(f"\n\n{'=' * 80}\n")
         total_files = sum(language_stats.values())
-        out_file.write(
-            f"SUMMARY: Documented {total_files} files from {self.source_path}\n"
-        )
+
+        # Adjust summary wording based on single vs. multiple sources
+        if len(self.source_paths) == 1:
+            out_file.write(
+                f"SUMMARY: Documented {total_files} files from {self.source_paths[0]}\n"
+            )
+        else:
+            out_file.write(
+                f"SUMMARY: Documented {total_files} files from {len(self.source_paths)} sources\n"
+            )
 
         # Write language-specific stats
         if len(language_stats) > 1:  # Only if there's more than one language
@@ -124,7 +148,17 @@ class MarkdownFormatter(BaseFormatter):
         out_file.write(
             f"*Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*\n\n"
         )
-        out_file.write(f"**Source:** `{self.source_path}`\n\n")
+
+        # Handle display of multiple source paths
+        if len(self.source_paths) == 1:
+            out_file.write(f"**Source:** `{self.source_paths[0]}`\n\n")
+        else:
+            out_file.write(
+                f"**Sources:** {len(self.source_paths)} directories/files\n\n"
+            )
+            for i, path in enumerate(self.source_paths):
+                out_file.write(f"{i+1}. `{path}`\n")
+            out_file.write("\n")
 
     def write_directory_structure(self, out_file, dir_structure):
         """Write the directory structure to the output file"""
@@ -176,9 +210,16 @@ class MarkdownFormatter(BaseFormatter):
         """Write the summary to the output file"""
         out_file.write(f"## Summary\n\n")
         total_files = sum(language_stats.values())
-        out_file.write(
-            f"Documented **{total_files}** files from `{self.source_path}`\n\n"
-        )
+
+        # Adjust summary wording based on single vs. multiple sources
+        if len(self.source_paths) == 1:
+            out_file.write(
+                f"Documented **{total_files}** files from `{self.source_paths[0]}`\n\n"
+            )
+        else:
+            out_file.write(
+                f"Documented **{total_files}** files from **{len(self.source_paths)}** sources\n\n"
+            )
 
         # Write language-specific stats
         if len(language_stats) > 1:  # Only if there's more than one language
@@ -197,8 +238,8 @@ def get_formatter(output_format, output_file, source_path):
 
     Args:
         output_format: Format of the output ('txt' or 'md')
-        output_file: Path to the output file
-        source_path: Path to the source directory
+        output_file: Path to the output file or "clipboard"
+        source_path: Path or list of paths to the source(s)
 
     Returns:
         Formatter instance

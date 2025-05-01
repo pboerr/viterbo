@@ -4,10 +4,11 @@ A tool for collecting and documenting code files for LLM context.
 
 ## Overview
 
-Viterbo helps collect source code files from various languages and compile them into a readable format for inclusion in LLM prompts. It scans directories for code files, extracts structured information like docstrings and comments, and generates comprehensive documentation in text or markdown format.
+Viterbo helps collect source code files from various languages and compile them into a readable format for inclusion in LLM prompts. It scans directories and individual files, extracts structured information like docstrings and comments, and generates comprehensive documentation in text or markdown format.
 
 ## Features
 
+-   **Multiple input sources**: Process directories and specific files in a single command
 -   **Multi-language support**: Python, C/C++, R, JavaScript, TypeScript, and many other languages
 -   **Directory tree visualization**: Shows the structure of your codebase
 -   **Documentation extraction**: Extracts docstrings, comments, and code structure
@@ -15,6 +16,7 @@ Viterbo helps collect source code files from various languages and compile them 
 -   **README inclusion**: Optionally include README.md files in the documentation
 -   **Line numbering**: Add line numbers to code for easy reference
 -   **Organized output**: Collects code with clear section headers showing file paths
+-   **Clipboard support**: Copy output directly to clipboard for easy pasting
 
 ## Installation
 
@@ -26,28 +28,50 @@ poetry install
 pip install viterbo
 ```
 
+For clipboard functionality, make sure to install the required dependency:
+
+```bash
+# Using Poetry
+poetry add pyperclip
+
+# Or with pip
+pip install pyperclip
+```
+
 ## Usage
 
 ### Command Line
 
 ```bash
-# Basic usage (Python files only)
-viterbo source_directory output_file [--include-docstrings] [--add-line-numbers]
+# Basic usage - copy Python files to clipboard
+viterbo source_directory
+
+# Process specific files and copy to clipboard
+viterbo file1.py file2.py file3.py
+
+# Process mixed directories and files
+viterbo src/ utils.py config/ main.py
+
+# Save to output file with -o/--output-file flag
+viterbo source_directory -o output.txt
+
+# Multiple sources with output file
+viterbo src/ lib/ main.py --output-file doc.txt
 
 # Enhanced usage with multi-language support
-viterbo /path/to/source output.txt --extensions .py .cpp .h .R
+viterbo /path/to/source -o output.txt --extensions .py .cpp .h .R
 
 # Include README.md files
-viterbo /path/to/source output.txt --include-readme
+viterbo /path/to/source --include-readme -o output.txt
 
 # Extract and include docstrings/comments
-viterbo /path/to/source output.txt --include-docstrings
+viterbo /path/to/source --include-docstrings -o output.txt
 
 # Add line numbers to code
-viterbo /path/to/source output.txt --add-line-numbers
+viterbo /path/to/source --add-line-numbers -o output.txt
 
 # Generate markdown output
-viterbo /path/to/source output.md --format md
+viterbo /path/to/source main.py -o output.md --format md
 ```
 
 ### Python API
@@ -57,7 +81,7 @@ from viterbo import document_files
 
 # Document Python and C++ files in markdown format
 document_files(
-    source_dir="/path/to/source",
+    source_paths=["/path/to/source", "main.py", "/another/dir"],
     output_file="output.md",
     file_extensions=[".py", ".cpp", ".h"],
     include_readme=True,
@@ -66,12 +90,20 @@ document_files(
     output_format="md"
 )
 
+# Copy to clipboard instead of writing to a file
+document_files(
+    source_paths=["src/", "main.py", "config.py"],
+    output_file=None,  # None means copy to clipboard
+    file_extensions=[".py", ".js"],
+    include_docstrings=True
+)
+
 # For backward compatibility, the original function is still available
 from viterbo import document_python_files
 
 document_python_files(
-    source_dir="/path/to/source",
-    output_file="output.txt",
+    source_paths="/path/to/source",  # Either a string or list of paths
+    output_file="output.txt",  # or None for clipboard
     include_docstrings=True,
     add_line_numbers=True
 )
@@ -84,7 +116,10 @@ document_python_files(
 ```
 # Code Documentation
 # Generated on: 2025-05-01 10:21:33
-# Source: /path/to/source
+# Sources: 3 directories/files
+#   1. /path/to/source
+#   2. main.py
+#   3. /another/dir
 
 # Directory Structure:
 /path/to/source/
@@ -94,12 +129,33 @@ document_python_files(
 │   └── utils.py
 └── tests/
     └── test_main.py
+
+main.py
+
+/another/dir/
+├── config.py
+└── helpers.py
 ...
 ```
 
 ### Markdown Output
 
 The markdown output includes syntax highlighting and better formatting for documentation.
+
+## Clipboard Support
+
+When no output file is specified, Viterbo will copy the documentation to your system clipboard:
+
+```bash
+# Copy documentation to clipboard
+viterbo ./my_project --include-docstrings
+```
+
+This is especially useful when:
+
+-   Quickly retrieving code for pasting into an LLM interface
+-   Sharing code snippets in messaging apps
+-   Documenting code without creating temporary files
 
 ## Development
 
