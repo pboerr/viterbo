@@ -174,7 +174,7 @@ class MarkdownFormatter(BaseFormatter):
     def write_module_docstring(self, out_file, docstring):
         """Write a module docstring to the output file"""
         out_file.write("### Module Documentation\n\n")
-        out_file.write(f"> {docstring.replace('\n', '\n> ')}\n\n")
+        out_file.write("> " + docstring.replace('\n', '\n> ') + "\n\n")
 
     def write_code(self, out_file, content, add_line_numbers=False, language=None):
         """Write code content to the output file"""

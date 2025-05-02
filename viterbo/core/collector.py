@@ -75,17 +75,19 @@ def document_files(
                 )
                 continue
 
-            # Check permissions
+            # Check access permissions in a cross-platform way
             try:
                 if source_path.is_dir():
-                    next(source_path.iterdir(), None)  # Test read permission
+                    # Try to list directory contents - this is more reliable cross-platform
+                    list(source_path.iterdir())
                 else:
                     # For files, try to open and close it to check read permission
                     with open(source_path, "r", encoding="utf-8", errors="ignore"):
                         pass
-            except PermissionError:
+            except (PermissionError, OSError) as e:
+                # Catch both PermissionError and OSError for better Windows compatibility
                 print(
-                    f"Warning: Permission denied when accessing '{source}', skipping",
+                    f"Warning: Cannot access '{source}', skipping. Error: {e}",
                     file=sys.stderr,
                 )
                 continue
@@ -180,13 +182,13 @@ def document_files(
                     # Get the relative path for display - try to make it relative to one of our source directories
                     rel_path = None
                     for source_path in valid_paths:
-                        if source_path.is_dir() and str(file_path).startswith(
-                            str(source_path)
-                        ):
+                        if source_path.is_dir():
                             try:
+                                # Use pathlib's relative_to method to safely handle cross-platform paths
                                 rel_path = file_path.relative_to(source_path)
                                 break
                             except ValueError:
+                                # Not a child path, continue checking other source paths
                                 pass
 
                     # If we couldn't get a relative path, use the filename
