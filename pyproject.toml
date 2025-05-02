@@ -1,12 +1,12 @@
 [tool.poetry]
 name = "viterbo"
-version = "0.3.0"
+version = "0.3.2"
 description = "A tool for collecting and documenting code for LLM context"
 authors = ["Francisco Boerr <francisco.boerr@deinnovatie.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = ">=3.9,<3.14"
 pyperclip = "^1.9.0"
 
 
